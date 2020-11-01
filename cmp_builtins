@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# cmp_buildins 1.2.2, 2020-10-31, 2020-11-01
+# cmp_buildins 1.2.3, 2020-10-31, 2020-11-01
 #
 # Listet die bash-internen Kommandos auf, für die ein ksh-internes
 # Kommando gleichen Namens existiert.
@@ -10,7 +10,7 @@
 
 # Data for program self description:
 PROGNAME="cmp_buildins"
-PROG_VERSION="1.2.2"
+PROG_VERSION="1.2.3"
 
 # Temporary files for shell exclusive builtins:
 NOT_BASH="/tmp/not_in_bash"
