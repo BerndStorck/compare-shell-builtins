@@ -37,7 +37,7 @@ function build_cmd_lists {
             echo -e "#!$(which elvish)\nuse builtin\nkeys \$builtin:\n" > /tmp/elvish_builtins
             OTHERS_BUILTIN="$(elvish /tmp/elvish_builtins | sed -En '/\~$/s/^..(.*)~$/\1/p' | sort)"
             rm -f /tmp/elvish_builtins
-            ;; 
+            ;;
     esac
 }
 
@@ -69,13 +69,17 @@ function headline {
 }
 
 function write_exclusive_commands {
-	headline "$1"
-	if [ -n "$FORMAT_CMD" ]; then
-		eval "$FORMAT_CMD" < "$2"
-	else
-		cat "$2" | tr '\n' ' ' | fmt -w 64
-	fi
-#	echo
+    headline "$1"
+    if [ -n "$FORMAT_CMD" ]; then
+        eval "$FORMAT_CMD" < "$2"
+    else
+            if which fmt 2> /dev/null; then
+                tr '\n' ' ' < "$2" | fmt -w 64
+            else
+                tr '\n' '`' < "$2" |\
+                sed -E 's/([-_[:alnum:]])`/\1, /g; s:`::g; s:, $:\n:'
+            fi
+    fi
 }
 
 function read_version_variable {
@@ -123,19 +127,19 @@ else
             )"
             ;;
         elvish)
-			# $ elvish -buildinfo 2> /dev/null
-			# version: 0.11+ds1-3
-			# builder: pkg-go-maintainers@lists.alioth.debian.org
-			#
-			# $ elvish -buildinfo 2> /dev/null
-			# Version: HEAD
-			# Go version: go1.13.5
-			# Reproducible build: true
+            # $ elvish -buildinfo 2> /dev/null
+            # version: 0.11+ds1-3
+            # builder: pkg-go-maintainers@lists.alioth.debian.org
+            #
+            # $ elvish -buildinfo 2> /dev/null
+            # Version: HEAD
+            # Go version: go1.13.5
+            # Reproducible build: true
             SHLVERS="$(/usr/local/bin/elvish -buildinfo 2> /dev/null |\
                         awk -F ':' '/[Vv]ersion/ {printf "%s", $2}'  |\
-					    sed 's/^[[:blank:]]*//'
+                        sed 's/^[[:blank:]]*//'
                       )"
-		    ;;
+            ;;
     esac
 fi
 }
