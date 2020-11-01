@@ -36,7 +36,7 @@ function build_cmd_lists {
         elvish)
             echo -e "#!$(which elvish)\nuse builtin\nkeys \$builtin:\n" > /tmp/elvish_builtins
             OTHERS_BUILTIN="$(elvish /tmp/elvish_builtins | sed -En '/\~$/s/^..(.*)~$/\1/p' | sort)"
-          #  rm -f /tmp/elvish_builtins
+            rm -f /tmp/elvish_builtins
             ;; 
     esac
 }
@@ -100,8 +100,7 @@ rm -f /tmp/sh_version
 function get_version {
 # Reads shell version to global variable SHLVERS and selects the method
 # depending on the shell.
-if grep -Ev "(bash|tcsh|elvish)" <<< "$1" &>/dev/null; then
-
+if [[ "$1" != "bash" && "$1" != "tcsh" && "$1" != "elvish" ]]; then
     case "$1" in
         ksh) # It's possible simply to parse "ksh --version", but i do not
              # like the result. So I will make it a little bit more tricky.
@@ -191,18 +190,16 @@ headline "In bash and also in $1:"
 for i in $BASH_BUILTIN; do
     [ "$i" = "[" ] && i="\["
     if grep -wq "$i" <<< "$OTHERS_BUILTIN"; then
-        sed 's:^\\::' <<< "$i"
+        echo "${i/\\/}"
     else
-        sed 's:\\::' <<< "$i" >> "$ONLY_BASH"
+        echo "${i/\\/}" >> "$ONLY_BASH"
     fi
 done | eval "$FORMAT_BASH"
 
 for i in $OTHERS_BUILTIN; do
-echo -n "$i" >> i_log
-#   [ "$i" = "[" ] && i="\["
     buildin="$(sed -E 's:[\+\[\-]:\\&:g' <<< "$i")"
     if ! grep -wq "$buildin" <<< "$BASH_BUILTIN"; then
-        sed 's:\\::' <<< "$i" >> "$NOT_BASH"
+        echo "${i/\\/}" >> "$NOT_BASH"
     fi
 done
 
