@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# cmp_buildins 1.2.3, 2020-10-31, 2020-11-01
+# cmp_buildins 1.2.4, 2020-10-31, 2020-11-01
 #
 # Listet die bash-internen Kommandos auf, für die ein ksh-internes
 # Kommando gleichen Namens existiert.
@@ -11,7 +11,7 @@
 # Data for program self description:
 PROG_NAME="cmp_builtins"
 SCRIPTNAME="${0##*/}"
-PROG_VERSION="1.2.3"
+PROG_VERSION="1.2.4"
 
 SUPPORTED="elvish fish ksh tcsh zsh"
 
@@ -92,6 +92,7 @@ function build_cmd_lists {
 #   - fish:     builtin -n|--names
 #   - zsh:      print -roC1 ${(k)builtins}  # builtins ist ein assoziatives Array.
     BASH_BUILTIN="$(compgen -b)"
+    BASH_INTERNAL="$(compgen -bk)"
     case "$1" in
         ksh)
             OTHERS_BUILTIN="$(ksh builtin | sed '/\//d')";;
@@ -110,8 +111,8 @@ function build_cmd_lists {
 }
 
 function build_format_cmd { # Derived from the scripts enver and param.
-# Defines the formatting command for the program columns or the
-# program column, depending on their existence.
+# Defines the formatting command for the program "columns" or the
+# program "column", depending on their existence.
     for i in columns column
     do
         if [ "$(which ${i})" ]; then
@@ -303,7 +304,7 @@ done | eval "$FORMAT_BASH"
 
 for i in $OTHERS_BUILTIN; do
     buildin="$(sed -E 's:[\+\[\-]:\\&:g' <<< "$i")"
-    if ! grep -wq "$buildin" <<< "$BASH_BUILTIN"; then
+    if ! grep -wq "$buildin" <<< "$BASH_INTERNAL"; then
         echo "${i/\\/}" >> "$NOT_BASH"
     fi
 done
