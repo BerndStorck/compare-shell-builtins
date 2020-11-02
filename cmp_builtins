@@ -9,12 +9,80 @@
 #
 
 # Data for program self description:
-PROGNAME="cmp_buildins"
+PROG_NAME="cmp_builtins"
+SCRIPTNAME="${0##*/}"
 PROG_VERSION="1.2.3"
+
+SUPPORTED="elvish fish ksh tcsh zsh"
 
 # Temporary files for shell exclusive builtins:
 NOT_BASH="/tmp/not_in_bash"
 ONLY_BASH="/tmp/not_in_other"
+
+if [ "${LANG::2}" == "de" ]; then  # sets a flag variable for the user interface language.
+    UILANG="Deutsch"
+    ERR_WRONG_PARA="FEHLER: Unzulässiger Parameter \"$1\"."
+    TITLE_SUPPORTED="UNTERSTÜTZTE SHELLS:"
+else
+    UILANG="English"
+    ERR_WRONG_PARA="ERROR: Improper parameter \"$1\"."
+    TITLE_SUPPORTED="SUPPORTED SHELLS:"
+fi
+
+function hilfe_seite {
+ more << _EOT_
+
+ $PROG_NAME $PROG_VERSION
+
+ AUFRUF:
+    1. $SCRIPTNAME zsh|tcsh|ksh|fish|elvish
+    2. $SCRIPTNAME --hilf
+    3. $SCRIPTNAME --supported
+    4. $SCRIPTNAME --version
+    5. $SCRIPTNAME -#
+
+ 1. Standardaufruf: Vergleicht die Namen der in die Bash
+    eingebauten Kommandos mit den Namen der internen
+    Funktionen der angegebenen anderen Shell.
+
+ 2. Anzeigen dieser Hilfeseite.
+
+ 3. Listet die unterstützten Shells auf.
+
+ 4. Programmname und Versionsnummer ausgeben.
+
+ 5. Nur die Versionsnummer ausgeben.
+
+_EOT_
+exit 0
+}
+
+function help_page {
+ more << _EOT_
+
+ $PROG_NAME $PROG_VERSION
+
+ AUFRUF:
+    1. $SCRIPTNAME zsh|tcsh|ksh|fish|elvish
+    2. $SCRIPTNAME --hilf
+    3. $SCRIPTNAME --supported
+    4. $SCRIPTNAME --version
+    5. $SCRIPTNAME -#
+
+ 1. Compares the names of the bash builtin commands with
+    the names of the builtin commands of the other shell.
+
+ 2. Displays this help page.
+
+ 3. Lists the supported shells.
+
+ 4. Gives program name and version number.
+
+ 5. Gives only the version number.
+
+_EOT_
+exit 0
+}
 
 function build_cmd_lists {
 # Retrieval of builtin commands.
@@ -178,6 +246,39 @@ function shell_info {
 }
 
 ### main ####################
+case "$1" in
+    --hilf|--hilfe|-hilf)  # Calls German help regardless of system settings for language.
+        hilfe_seite
+        exit 0
+        ;;
+    --help|-h|-help)
+        if [ "$UILANG" == "Deutsch" ]; then
+            hilfe_seite
+        else
+            help_page
+        fi
+        exit 0
+        ;;
+     --supported)
+         echo -e "\n$TITLE_SUPPORTED"
+         echo -e "$SUPPORTED\n"
+         exit 0
+         ;;
+    --version|-\#)   # For possible bug reports.
+        if [ "$1" = "--version" ]; then
+            echo -n "$PROG_NAME "
+        fi
+        echo "$PROG_VERSION"
+        exit 0
+        ;;
+esac
+
+if grep -Ev 'zsh|fish|tcsh|ksh|elvish' <<< "$1" &> /dev/null; then
+    echo "$ERR_WRONG_PARA"
+    $0 --supported
+    exit 1
+fi
+
 rm -f "$NOT_BASH" "$ONLY_BASH"
 clear
 
